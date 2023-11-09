@@ -40,7 +40,7 @@ defmodule Ueberauth.Strategy.OIDC do
           query = URI.encode_query(params)
           {:ok, "#{request_uri}?#{query}"}
         else
-          opts.module.authorization_uri(opts, params)
+          opts.module.authorization_uri(opts, opts.redirect_uri, params)
         end
 
       redirect!(conn, uri)
@@ -64,7 +64,13 @@ defmodule Ueberauth.Strategy.OIDC do
 
       code ->
         opts = get_options!(conn)
-        params = params_from_conn(conn, %{code: code})
+
+        params =
+          params_from_conn(conn, %{
+            grant_type: "authorization_code",
+            redirect_uri: opts.redirect_uri,
+            code: code
+          })
 
         with {:ok, %{"access_token" => access_token, "id_token" => id_token} = tokens} <-
                opts.module.fetch_tokens(opts, params),

@@ -43,7 +43,7 @@ defmodule UeberauthOIDC.Mixfile do
       {:ex_doc, "~> 0.24", only: [:dev, :test]},
       {:jose, "~> 1.11"},
       {:openid_connect,
-       github: "DockYard/openid_connect", ref: "ddafedc3c81a5bc91919d13630b6cb5ea2595ffe"},
+       github: "firezone/openid_connect", ref: "13320ed8b0d347330d07e1375a9661f3089b9c03"},
       {:plug, "~> 1.11"},
       {:ueberauth, "~> 0.10.5"}
     ]

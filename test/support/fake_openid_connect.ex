@@ -11,14 +11,14 @@ defmodule FakeOpenIDConnect do
     "valid_code"
   end
 
-  def authorization_uri(opts, params \\ %{})
+  def authorization_uri(opts, redirect_uri, params \\ %{})
 
-  def authorization_uri(%{discovery_document_uri: _} = opts, params) do
+  def authorization_uri(%{discovery_document_uri: _} = opts, redirect_uri, params) do
     params =
       Map.merge(
         %{
           client_id: opts.client_id,
-          redirect_uri: opts.redirect_uri,
+          redirect_uri: redirect_uri,
           response_type: opts.response_type,
           scope: opts.scope
         },
@@ -30,9 +30,9 @@ defmodule FakeOpenIDConnect do
     {:ok, "#{request_url()}?#{query}"}
   end
 
-  def authorization_uri(_opts, _params) do
-    {:error, :missing_discovery_document_uri}
-  end
+  # def authorization_uri(_opts, _redirect_uri, _params) do
+  #   {:error, :missing_discovery_document_uri}
+  # end
 
   def fetch_tokens(opts, params)
 
@@ -41,16 +41,20 @@ defmodule FakeOpenIDConnect do
   end
 
   def fetch_tokens(%{discovery_document_uri: _, client_secret: "secret_value"}, params) do
-    if Map.get(params, :code) == callback_code() do
-      {:ok,
-       %{
-         "access_token" => "access_token_value",
-         "id_token" => "id_token_value",
-         "refresh_token" => "refresh_token_value",
-         "token_type" => "Bearer"
-       }}
-    else
-      {:error, :invalid_code}
+    expected_code = callback_code()
+
+    case params do
+      %{grant_type: "authorization_code", redirect_uri: _, code: ^expected_code} ->
+        {:ok,
+         %{
+           "access_token" => "access_token_value",
+           "id_token" => "id_token_value",
+           "refresh_token" => "refresh_token_value",
+           "token_type" => "Bearer"
+         }}
+
+      _ ->
+        {:error, :invalid_code}
     end
   end
 
